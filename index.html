@@ -266,6 +266,7 @@
     /* Botão */
     .header-actions {
       display: flex;
+      align-items: center;
       gap: 0.65rem;
       flex-wrap: wrap;
     }
@@ -296,6 +297,32 @@
       background: transparent;
       color: var(--primary);
       border: 1px solid var(--primary);
+    }
+
+    .btn-primary-action {
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+    }
+
+    .btn-compact {
+      padding: 0.55rem 0.85rem;
+      font-size: 0.82rem;
+      gap: 0.35rem;
+    }
+
+    .pdf-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      padding: 0.18rem 0.25rem;
+      border-radius: 4px;
+      background: #b91c1c;
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1;
     }
 
     .site-footer {
@@ -433,10 +460,10 @@
         <h1>🛡️ O Digitador Fiel</h1>
       </div>
       <div class="header-actions">
-        <button id="btnGeneratePdf" class="btn">📄 Gerar texto/relatório</button>
-        <button id="btnTheme" class="btn btn-secondary" title="Clique para alternar o tema">🎨 Tema: Escuro</button>
-        <button id="btnEmbed" class="btn btn-secondary" title="Copiar código para incorporar este aplicativo">&lt;/&gt; Incorporar</button>
-        <button id="btnVerify" class="btn btn-secondary">✓ Verificar relatório</button>
+        <button id="btnGeneratePdf" class="btn btn-primary-action"><span class="pdf-icon" aria-hidden="true">PDF</span> Gerar texto/relatório</button>
+        <button id="btnTheme" class="btn btn-secondary btn-compact" title="Clique para alternar o tema">🎨 Tema: Escuro</button>
+        <button id="btnEmbed" class="btn btn-secondary btn-compact" title="Ferramenta do professor: copiar código para incorporar este aplicativo" aria-label="Ferramenta do professor: incorporar aplicativo">👨‍🏫 &lt;/&gt; Incorporar</button>
+        <button id="btnVerify" class="btn btn-secondary btn-compact" title="Ferramenta do professor: verificar a integridade de um relatório" aria-label="Ferramenta do professor: verificar relatório">👨‍🏫 ✓ Verificar relatório</button>
       </div>
     </header>
 
@@ -1252,10 +1279,11 @@ O fundamento pedagógico deste sistema é valorizar o percurso de produção tex
       const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const contentTop = 35;
+      const firstPageContentTop = 50;
+      const continuationContentTop = 35;
       const contentBottom = 220;
       const lineHeight = 5.1;
-      let cursorY = contentTop;
+      let cursorY = firstPageContentTop;
 
       doc.setProperties({
         title: `O Digitador Fiel - Relatório ${metadata.relatorioId}`,
@@ -1266,7 +1294,7 @@ O fundamento pedagógico deste sistema é valorizar o percurso de produção tex
 
       function drawHeader(isContinuation = false) {
         doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, pageWidth, 24, 'F');
+        doc.rect(0, 0, pageWidth, isContinuation ? 24 : 38, 'F');
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(14);
         doc.setTextColor(255, 255, 255);
@@ -1275,10 +1303,23 @@ O fundamento pedagógico deste sistema é valorizar o percurso de produção tex
         doc.setFontSize(8.5);
         doc.setTextColor(148, 163, 184);
         doc.text('Relatório de escrita monitorada', 14, 17);
+
+        if (!isContinuation) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11.5);
+          doc.setTextColor(255, 255, 255);
+          doc.text(`ALUNO: ${studentName}`, 14, 25, { maxWidth: pageWidth - 28 });
+
+          doc.setFontSize(9.5);
+          doc.setTextColor(226, 232, 240);
+          doc.text(`RA: ${studentId}`, 14, 32, { maxWidth: 50 });
+          doc.text(`DISCIPLINA: ${subjectName}`, 70, 32, { maxWidth: pageWidth - 84 });
+        }
+
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10.5);
         doc.setTextColor(30, 41, 59);
-        doc.text(isContinuation ? 'CONTEÚDO SUBMETIDO - CONTINUAÇÃO' : 'CONTEÚDO SUBMETIDO', 14, 31);
+        doc.text(isContinuation ? 'CONTEÚDO SUBMETIDO - CONTINUAÇÃO' : 'CONTEÚDO SUBMETIDO', 14, isContinuation ? 31 : 46);
       }
 
       drawHeader(false);
@@ -1311,7 +1352,7 @@ O fundamento pedagógico deste sistema é valorizar o percurso de produção tex
         if (cursorY > contentBottom) {
           doc.addPage();
           drawHeader(true);
-          cursorY = contentTop;
+          cursorY = continuationContentTop;
         }
       }
 
