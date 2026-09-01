@@ -20,10 +20,12 @@ Esses dados podem auxiliar a avaliação formativa do professor, mas não devem 
 - Suporte às teclas `Enter` e `Tab`.
 - Buffer de digitação que preserva caracteres digitados rapidamente.
 - Bloqueio de colagem e de arrastar texto para o editor.
+- Limite máximo de 2.000 caracteres por texto.
 - Contagem de palavras e caracteres.
-- Cálculo aproximado de palavras por minuto.
+- Cálculo aproximado de palavras por minuto (PPM).
 - Registro do tempo ativo e das saídas da aba.
-- Campos para nome, matrícula ou RA e disciplina.
+- Nome completo do aluno obrigatório para gerar o relatório.
+- Campos opcionais para matrícula ou RA e disciplina.
 - Quatro temas visuais.
 - Relatório em PDF com o conteúdo submetido, identificação e telemetria.
 - Código de verificação baseado em SHA-256 para detectar alterações.
@@ -32,11 +34,11 @@ Esses dados podem auxiliar a avaliação formativa do professor, mas não devem 
 
 ## Como usar
 
-1. Informe o nome do estudante, a matrícula ou RA e a disciplina.
+1. Informe o nome completo do estudante, que é obrigatório. A matrícula ou RA e a disciplina são opcionais.
 2. Digite o texto diretamente no editor.
-3. Utilize os controles de formatação quando necessário.
+3. Utilize os controles de formatação quando necessário, respeitando o limite de 2.000 caracteres.
 4. Aguarde o buffer terminar, caso ainda existam caracteres pendentes.
-5. Clique em **Gerar relatório PDF**.
+5. Clique em **Gerar texto/relatório**.
 6. Entregue o PDF ao professor conforme as orientações da atividade.
 
 ## Verificação de um relatório
@@ -101,4 +103,3 @@ Desenvolvido pelo professor **Glauber Santiago — DAC/UFSCar**.
 ## Repositório
 
 [github.com/GlauberLASantiago/o-digitador-fiel](https://github.com/GlauberLASantiago/o-digitador-fiel)
-
