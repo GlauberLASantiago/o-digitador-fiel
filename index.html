@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>O Digitador Fiel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  
+  <!-- jsPDF via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --accent: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --button-text: #052e16;
+      --blocked-bg: #2b131e;
+      --note-bg: rgba(56, 189, 248, 0.08);
+      --note-border: rgba(56, 189, 248, 0.35);
+    }
+
+    :root[data-theme="palette1"] {
+      --bg: #E7F0C7;
+      --card-bg: #FFFFFF;
+      --border: #BCDFB9;
+      --text: #000000;
+      --text-muted: #000000;
+      --primary: #C87F8B;
+      --accent: #BCDFB9;
+      --warning: #E9A97F;
+      --danger: #C87F8B;
+      --button-text: #000000;
+      --blocked-bg: #E9A97F;
+      --note-bg: #FFFFFF;
+      --note-border: #C87F8B;
+    }
+
+    :root[data-theme="palette2"] {
+      --bg: #F2D499;
+      --card-bg: #F7F5E6;
+      --border: #8E6B4D;
+      --text: #8E6B4D;
+      --text-muted: #8E6B4D;
+      --primary: #C45E4D;
+      --accent: #5B8E7D;
+      --warning: #C45E4D;
+      --danger: #C45E4D;
+      --button-text: #F7F5E6;
+      --blocked-bg: #F2D499;
+      --note-bg: #F7F5E6;
+      --note-border: #5B8E7D;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f1f5f9;
+      --card-bg: #FFFFFF;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --primary: #0369a1;
+      --accent: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --button-text: #FFFFFF;
+      --blocked-bg: #fee2e2;
+      --note-bg: #e0f2fe;
+      --note-border: #7dd3fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 950px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .rules-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* Identificação */
+    .student-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1.5fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .student-bar { grid-template-columns: 1fr; }
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Métricas */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Editor */
+    .editor-container {
+      position: relative;
+    }
+
+    #textEditor {
+      width: 100%;
+      height: 380px;
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color 0.15s, background-color 0.15s;
+      overflow-y: auto;
+    }
+
+    #textEditor .ql-editor { padding: 1.25rem; }
+
+    .rich-editor-shell {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .rich-editor-shell:focus-within {
+      border-color: var(--primary);
+    }
+
+    .ql-toolbar.ql-snow {
+      background: var(--card-bg);
+      border: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ql-container.ql-snow { border: 0; }
+    .ql-snow .ql-stroke { stroke: var(--text); }
+    .ql-snow .ql-fill { fill: var(--text); }
+    .ql-snow .ql-picker,
+    .ql-snow .ql-picker-label,
+    .ql-snow .ql-picker-label::before,
+    .ql-snow .ql-picker-item,
+    .ql-snow .ql-picker-item::before { color: var(--text); }
+    .ql-snow .ql-picker-options {
+      background: var(--card-bg);
+      border-color: var(--border);
+    }
+    .ql-snow .ql-picker-item:hover,
+    .ql-snow .ql-picker-item.ql-selected { color: var(--primary); }
+    .ql-snow.ql-toolbar button:hover .ql-stroke,
+    .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: var(--primary); }
+    .ql-editor.ql-blank::before {
+      color: var(--text-muted);
+      font-style: normal;
+      left: 1.25rem;
+      right: 1.25rem;
+      white-space: pre-line;
+    }
+
+    /* Destaque visual ao ser bloqueado por velocidade */
+    #textEditor .ql-editor.rate-blocked {
+      border-color: var(--danger) !important;
+      background-color: var(--blocked-bg) !important;
+      animation: shake 0.15s ease-in-out 2;
+    }
+
+    #textEditor .ql-editor.limit-max-reached {
+      border-color: var(--warning) !important;
+    }
+
+    #textEditor .ql-editor.buffering {
+      border-color: var(--warning);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    /* Botão */
+    .header-actions {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: var(--button-text);
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+
+    .btn:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .site-footer {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.6;
+      padding: 0.25rem 0.5rem 0;
+      text-align: center;
+    }
+
+    .site-footer strong { color: var(--text); }
+
+    .site-footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .site-footer a:hover { text-decoration: underline; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1100;
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      width: min(680px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: 0;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+
+    .verify-field { margin-bottom: 0.85rem; }
+    .verify-field label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .verify-field input,
+    .verify-field textarea {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.7rem;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .verify-field textarea { height: 170px; resize: vertical; }
+
+    .verify-result {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .verify-result.valid {
+      display: block;
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, 0.14);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .verify-result.invalid {
+      display: block;
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--danger);
+      color: #fff;
+      padding: 0.85rem 1.3rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>🛡️ O Digitador Fiel</h1>
+        <div class="rules-tag">Cadência mínima: <strong>60ms por caractere</strong> | Limite: <strong>1.500 palavras</strong></div>
+      </div>
+      <div class="header-actions">
+        <button id="btnTheme" class="btn btn-secondary" title="Clique para alternar o tema">🎨 Tema: Escuro</button>
+        <button id="btnEmbed" class="btn btn-secondary" title="Copiar código para incorporar este aplicativo">&lt;/&gt; Incorporar</button>
+        <button id="btnVerify" class="btn btn-secondary">✓ Verificar relatório</button>
+        <button id="btnGeneratePdf" class="btn">📄 Gerar relatório PDF</button>
+      </div>
+    </header>
+
+    <!-- Editor em destaque, imediatamente abaixo do título -->
+    <div class="editor-container rich-editor-shell">
+      <div id="editorToolbar" aria-label="Formatação do texto">
+        <button class="ql-bold" title="Negrito" aria-label="Negrito"></button>
+        <button class="ql-italic" title="Itálico" aria-label="Itálico"></button>
+        <button class="ql-underline" title="Sublinhado" aria-label="Sublinhado"></button>
+        <select class="ql-size" title="Tamanho da fonte" aria-label="Tamanho da fonte">
+          <option value="small">Pequena</option>
+          <option selected>Normal</option>
+          <option value="large">Grande</option>
+          <option value="huge">Muito grande</option>
+        </select>
+        <button class="ql-list" value="ordered" title="Lista numerada" aria-label="Lista numerada"></button>
+        <button class="ql-list" value="bullet" title="Lista com marcadores" aria-label="Lista com marcadores"></button>
+        <button class="ql-clean" title="Remover formatação" aria-label="Remover formatação"></button>
+      </div>
+      <div id="textEditor"></div>
+    </div>
+
+    <!-- Dados do Estudante -->
+    <div class="student-bar">
+      <div class="input-group">
+        <label for="studentName">Nome Completo do Aluno:</label>
+        <input type="text" id="studentName" placeholder="Ex: Glauber Santiago">
+      </div>
+      <div class="input-group">
+        <label for="studentId">Matrícula / RA:</label>
+        <input type="text" id="studentId" placeholder="Ex: 123456">
+      </div>
+      <div class="input-group">
+        <label for="subjectName">Nome da Disciplina:</label>
+        <input type="text" id="subjectName" placeholder="Ex: Produção Textual">
+      </div>
+    </div>
+
+    <!-- Painel de Métricas -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div id="wordCount" class="metric-value">0</div>
+        <div class="metric-label">Palavras</div>
+      </div>
+      <div class="metric-card">
+        <div id="charCount" class="metric-value">0</div>
+        <div class="metric-label">Caracteres</div>
+      </div>
+      <div class="metric-card">
+        <div id="wpmValue" class="metric-value">0</div>
+        <div class="metric-label">PPM Real</div>
+      </div>
+      <div class="metric-card">
+        <div id="speedBlocks" class="metric-value" style="color: var(--warning)">0</div>
+        <div class="metric-label">Aguardando no Buffer</div>
+      </div>
+      <div class="metric-card">
+        <div id="blurCount" class="metric-value" style="color: var(--warning)">0</div>
+        <div class="metric-label">Saídas de Aba</div>
+      </div>
+      <div class="metric-card">
+        <div id="timeSpent" class="metric-value">00:00</div>
+        <div class="metric-label">Tempo Ativo</div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <strong>Desenvolvido pelo professor Glauber Santiago — DAC/UFSCar</strong><br>
+      <a href="http://servidores.ufscar.br/glauber/" target="_blank" rel="noopener noreferrer">servidores.ufscar.br/glauber/</a> •
+      <a href="https://glauberia.web.app/" target="_blank" rel="noopener noreferrer">glauberia.web.app/</a> •
+      <a href="https://aprenda-musica-comigo.web.app/" target="_blank" rel="noopener noreferrer">aprenda-musica-comigo.web.app/</a> •
+      <a href="https://grupohorizonte.ufscar.br/" target="_blank" rel="noopener noreferrer">Grupo de Pesquisa Horizonte</a>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast">Aviso</div>
+
+  <div id="verifyModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="verifyTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="verifyTitle">Verificar integridade do relatório</h2>
+          <div class="rules-tag">Cole o código impresso no PDF e o conteúdo submetido.</div>
+        </div>
+        <button id="btnCloseVerify" class="modal-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="verify-field">
+        <label for="verificationCode">Código de verificação</label>
+        <input id="verificationCode" type="text" placeholder="ODF1.eyJ...">
+      </div>
+      <div class="verify-field">
+        <label for="verificationText">Conteúdo submetido (copie do PDF)</label>
+        <textarea id="verificationText" placeholder="Cole aqui exatamente o conteúdo do relatório..."></textarea>
+      </div>
+      <button id="btnRunVerification" class="btn">Verificar agora</button>
+      <div id="verificationResult" class="verify-result"></div>
+    </div>
+  </div>
+
+  <script>
+    // Configurações Rígidas
+    const MIN_INTERVAL_PER_CHAR_MS = 60; // Permite digitação até duas vezes mais rápida
+    const BUFFER_WARNING_MS = 5000; // Alerta visual; nunca descarta caracteres da fila
+    const TARGET_MAX_WORDS = 1500;
+
+    const EDITOR_HELP_TEXT = `Digite seu texto diretamente neste espaço. Colagens e inserções automáticas são bloqueadas para que o relatório registre o processo real de escrita. Se você digitar muito rapidamente, os caracteres serão guardados temporariamente e aparecerão em sequência, sem serem perdidos.
+
+O fundamento pedagógico deste sistema é valorizar o percurso de produção textual, e não apenas o resultado final. A escrita direta permite ao estudante exercitar organização de ideias, fluência, revisão, correção e autoria. As informações registradas servem como apoio à avaliação formativa do professor e não devem ser interpretadas isoladamente como prova de aprendizagem, fraude ou uso de inteligência artificial.`;
+
+    const quill = new Quill('#textEditor', {
+      theme: 'snow',
+      placeholder: EDITOR_HELP_TEXT,
+      modules: { toolbar: '#editorToolbar' },
+      formats: ['bold', 'italic', 'underline', 'size', 'list']
+    });
+
+    // Elementos
+    const editor = quill.root;
+    editor.setAttribute('autocomplete', 'off');
+    editor.setAttribute('autocorrect', 'off');
+    editor.setAttribute('autocapitalize', 'off');
+    editor.setAttribute('spellcheck', 'false');
+    const wordCountElem = document.getElementById('wordCount');
+    const charCountElem = document.getElementById('charCount');
+    const wpmElem = document.getElementById('wpmValue');
+    const speedBlocksElem = document.getElementById('speedBlocks');
+    const blurCountElem = document.getElementById('blurCount');
+    const timeSpentElem = document.getElementById('timeSpent');
+    const toast = document.getElementById('toast');
+    const btnGeneratePdf = document.getElementById('btnGeneratePdf');
+    const studentNameInput = document.getElementById('studentName');
+    const studentIdInput = document.getElementById('studentId');
+    const subjectNameInput = document.getElementById('subjectName');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnEmbed = document.getElementById('btnEmbed');
+    const btnVerify = document.getElementById('btnVerify');
+    const verifyModal = document.getElementById('verifyModal');
+    const btnCloseVerify = document.getElementById('btnCloseVerify');
+    const btnRunVerification = document.getElementById('btnRunVerification');
+    const verificationCodeInput = document.getElementById('verificationCode');
+    const verificationTextInput = document.getElementById('verificationText');
+    const verificationResult = document.getElementById('verificationResult');
+
+    const THEME_OPTIONS = [
+      { id: 'palette1', label: 'Paleta 1' },
+      { id: 'palette2', label: 'Paleta 2' },
+      { id: 'dark', label: 'Escuro' },
+      { id: 'light', label: 'Claro' }
+    ];
+    let currentThemeIndex = 2;
+
+    function applyTheme(themeId) {
+      const nextIndex = THEME_OPTIONS.findIndex(theme => theme.id === themeId);
+      currentThemeIndex = nextIndex >= 0 ? nextIndex : 2;
+      const selectedTheme = THEME_OPTIONS[currentThemeIndex];
+      if (selectedTheme.id === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', selectedTheme.id);
+      }
+      btnTheme.textContent = `🎨 Tema: ${selectedTheme.label}`;
+      btnTheme.setAttribute('aria-label', `Tema atual: ${selectedTheme.label}. Clique para alternar.`);
+      try { localStorage.setItem('odf-theme', selectedTheme.id); } catch (_) {}
+    }
+
+    btnTheme.addEventListener('click', () => {
+      const nextTheme = THEME_OPTIONS[(currentThemeIndex + 1) % THEME_OPTIONS.length];
+      applyTheme(nextTheme.id);
+    });
+
+    let savedTheme = 'dark';
+    try { savedTheme = localStorage.getItem('odf-theme') || 'dark'; } catch (_) {}
+    applyTheme(savedTheme);
+
+    function getPublicAppUrl() {
+      const currentUrl = new URL(window.location.href);
+      const isPublicAddress = ['http:', 'https:'].includes(currentUrl.protocol)
+        && !['localhost', '127.0.0.1'].includes(currentUrl.hostname);
+      if (isPublicAddress) {
+        currentUrl.search = '';
+        currentUrl.hash = '';
+        return currentUrl.href;
+      }
+      return 'https://glauberlasantiago.github.io/o-digitador-fiel/';
+    }
+
+    function buildEmbedCode() {
+      const appUrl = getPublicAppUrl();
+      return `<!-- INÍCIO DO CÓDIGO DE INCORPORAÇÃO: O DIGITADOR FIEL -->
+<div style="width:100%;max-width:1200px;margin:0 auto;">
+  <iframe
+    src="${appUrl}"
+    title="O Digitador Fiel"
+    width="100%"
+    height="900"
+    style="display:block;border:0;min-height:75vh;"
+    loading="lazy"
+    allow="clipboard-write"
+    allowfullscreen>
+  </iframe>
+</div>
+<!-- FIM DO CÓDIGO DE INCORPORAÇÃO: O DIGITADOR FIEL -->`;
+    }
+
+    async function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const temporaryField = document.createElement('textarea');
+      temporaryField.value = text;
+      temporaryField.setAttribute('readonly', '');
+      temporaryField.style.position = 'fixed';
+      temporaryField.style.opacity = '0';
+      document.body.appendChild(temporaryField);
+      temporaryField.select();
+      const copied = document.execCommand('copy');
+      temporaryField.remove();
+      if (!copied) throw new Error('A cópia não foi autorizada pelo navegador.');
+    }
+
+    btnEmbed.addEventListener('click', async () => {
+      try {
+        await copyTextToClipboard(buildEmbedCode());
+        showToast('✅ Código de incorporação copiado! Cole-o no editor HTML do Moodle ou do site.');
+      } catch (error) {
+        showToast('⚠️ Não foi possível copiar. Verifique a permissão da área de transferência.');
+      }
+    });
+
+    // Estado Interno
+    let lastRenderedTimestamp = 0;
+    let desiredText = "";
+    let desiredSelectionStart = 0;
+    let desiredSelectionEnd = 0;
+    let bufferInterval = null;
+    let bufferedKeystrokes = 0;
+    let maxBufferDepth = 0;
+    let bufferWarningShown = false;
+    let blockedCount = 0;
+    let pasteAttempts = 0;
+    let validKeystrokes = 0;
+    let backspaceCount = 0;
+    let tabSwitchCount = 0;
+    let secondsActive = 0;
+    let timerInterval = null;
+    let sessionStarted = false;
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function triggerBlockFeedback(reason) {
+      blockedCount++;
+      editor.classList.add('rate-blocked');
+      showToast(`⛔ BLOQUEIO: ${reason}`);
+      setTimeout(() => editor.classList.remove('rate-blocked'), 200);
+    }
+
+    function getCurrentWordCount(str) {
+      const trimmed = str.trim();
+      return trimmed ? trimmed.split(/\s+/).length : 0;
+    }
+
+    function getEditorText() {
+      return quill.getText(0, Math.max(0, quill.getLength() - 1));
+    }
+
+    function getPendingBufferSize() {
+      const visible = getEditorText();
+      let prefix = 0;
+      while (prefix < visible.length && prefix < desiredText.length && visible[prefix] === desiredText[prefix]) {
+        prefix++;
+      }
+
+      let suffix = 0;
+      while (
+        suffix < visible.length - prefix &&
+        suffix < desiredText.length - prefix &&
+        visible[visible.length - 1 - suffix] === desiredText[desiredText.length - 1 - suffix]
+      ) {
+        suffix++;
+      }
+
+      return Math.max(visible.length - prefix - suffix, desiredText.length - prefix - suffix);
+    }
+
+    document.getElementById('editorToolbar').addEventListener('mousedown', (event) => {
+      if (getPendingBufferSize() > 0) {
+        flushBufferImmediately(true);
+      }
+    }, true);
+
+    function updateBufferUI() {
+      const pending = getPendingBufferSize();
+      speedBlocksElem.innerText = pending;
+      editor.classList.toggle('buffering', pending > 0);
+      btnGeneratePdf.disabled = pending > 0;
+      btnGeneratePdf.title = pending > 0 ? 'Aguarde o buffer terminar' : 'Gerar relatório PDF';
+
+      const estimatedDelay = pending * MIN_INTERVAL_PER_CHAR_MS;
+      if (estimatedDelay >= BUFFER_WARNING_MS && !bufferWarningShown) {
+        bufferWarningShown = true;
+        showToast('⏳ O buffer passou de 5 segundos, mas nenhuma tecla será descartada.');
+      } else if (pending === 0) {
+        bufferWarningShown = false;
+      }
+    }
+
+    function applyNextBufferedChange() {
+      const visible = getEditorText();
+      if (visible === desiredText) {
+        if (bufferInterval) clearInterval(bufferInterval);
+        bufferInterval = null;
+        updateBufferUI();
+        return;
+      }
+
+      let prefix = 0;
+      while (prefix < visible.length && prefix < desiredText.length && visible[prefix] === desiredText[prefix]) {
+        prefix++;
+      }
+
+      let caretPosition;
+      if (visible.length < desiredText.length) {
+        const nextCharacter = desiredText[prefix];
+        const inheritedFormat = nextCharacter === '\n'
+          ? quill.getFormat(prefix, 0)
+          : prefix > 0
+            ? quill.getFormat(prefix - 1, 1)
+            : quill.getFormat(prefix, 0);
+        quill.insertText(prefix, nextCharacter, inheritedFormat, 'api');
+        caretPosition = prefix + 1;
+      } else if (visible.length > desiredText.length) {
+        quill.deleteText(prefix, 1, 'api');
+        caretPosition = prefix;
+      } else {
+        const nextCharacter = desiredText[prefix];
+        const inheritedFormat = nextCharacter === '\n'
+          ? quill.getFormat(prefix, 0)
+          : prefix > 0
+            ? quill.getFormat(prefix - 1, 1)
+            : quill.getFormat(prefix, 0);
+        quill.deleteText(prefix, 1, 'api');
+        quill.insertText(prefix, nextCharacter, inheritedFormat, 'api');
+        caretPosition = prefix + 1;
+      }
+
+      lastRenderedTimestamp = performance.now();
+      quill.setSelection(caretPosition, 0, 'silent');
+      updateMetricsUI();
+      updateBufferUI();
+
+      if (getEditorText() === desiredText && bufferInterval) {
+        clearInterval(bufferInterval);
+        bufferInterval = null;
+      }
+    }
+
+    function flushBufferImmediately(preserveTextSelection = false) {
+      const selectionBeforeFlush = preserveTextSelection ? quill.getSelection() : null;
+      if (bufferInterval) clearInterval(bufferInterval);
+      bufferInterval = null;
+
+      let safetyCounter = 0;
+      while (getEditorText() !== desiredText && safetyCounter < 20000) {
+        applyNextBufferedChange();
+        safetyCounter++;
+      }
+
+      if (selectionBeforeFlush && selectionBeforeFlush.length > 0) {
+        quill.setSelection(selectionBeforeFlush.index, selectionBeforeFlush.length, 'silent');
+      }
+      updateBufferUI();
+    }
+
+    function scheduleBufferProcessing() {
+      const now = performance.now();
+      if (!lastRenderedTimestamp || (now - lastRenderedTimestamp >= MIN_INTERVAL_PER_CHAR_MS && !bufferInterval)) {
+        applyNextBufferedChange();
+      }
+      if (getEditorText() !== desiredText && !bufferInterval) {
+        bufferInterval = setInterval(applyNextBufferedChange, MIN_INTERVAL_PER_CHAR_MS);
+      }
+      updateBufferUI();
+    }
+
+    function ensureSessionStarted() {
+      if (!sessionStarted) {
+        sessionStarted = true;
+        timerInterval = setInterval(updateTimer, 1000);
+      }
+    }
+
+    function syncDesiredStateIfIdle() {
+      if (getPendingBufferSize() === 0) {
+        desiredText = getEditorText();
+        const selection = quill.getSelection() || { index: desiredText.length, length: 0 };
+        desiredSelectionStart = selection.index;
+        desiredSelectionEnd = selection.index + selection.length;
+      }
+    }
+
+    function enqueueInsertion(insertedData, keystrokeCount = insertedData.length) {
+      syncDesiredStateIfIdle();
+      const proposedText = desiredText.slice(0, desiredSelectionStart) + insertedData + desiredText.slice(desiredSelectionEnd);
+      if (getCurrentWordCount(proposedText) > TARGET_MAX_WORDS) {
+        showToast(`⛔ LIMITE MÁXIMO ATINGIDO: O texto atingiu o teto de ${TARGET_MAX_WORDS} palavras.`);
+        return false;
+      }
+
+      const wasBuffered = getPendingBufferSize() > 0 || (lastRenderedTimestamp && performance.now() - lastRenderedTimestamp < MIN_INTERVAL_PER_CHAR_MS);
+      desiredText = proposedText;
+      desiredSelectionStart += insertedData.length;
+      desiredSelectionEnd = desiredSelectionStart;
+      validKeystrokes += keystrokeCount;
+      if (wasBuffered) bufferedKeystrokes += insertedData.length;
+
+      ensureSessionStarted();
+      scheduleBufferProcessing();
+      maxBufferDepth = Math.max(maxBufferDepth, getPendingBufferSize());
+      return true;
+    }
+
+    // Capturamos Enter e Tab antes do editor rico para preservá-los no buffer.
+    editor.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.isComposing) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        enqueueInsertion('\n');
+      } else if (event.key === 'Tab' && !event.isComposing) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        enqueueInsertion('    ', 1);
+      }
+    }, true);
+
+    // 1. Bloqueio nativo de Colagem e Drop
+    editor.addEventListener('paste', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      pasteAttempts++;
+      triggerBlockFeedback('Colagem de texto desativada!');
+    }, true);
+
+    editor.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      triggerBlockFeedback('Arrasto de texto desativado!');
+    }, true);
+
+    // 2. Interceptador: guarda edições rápidas e as exibe na cadência configurada
+    editor.addEventListener('beforeinput', (e) => {
+      // Bloqueio de inserções por colagem de qualquer origem
+      if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
+        e.preventDefault();
+        pasteAttempts++;
+        triggerBlockFeedback('Tentativa de inserção colada bloqueada!');
+        return;
+      }
+
+      if (e.inputType.startsWith('history')) {
+        if (getPendingBufferSize() > 0) {
+          flushBufferImmediately();
+        }
+        return;
+      }
+
+      syncDesiredStateIfIdle();
+
+      if (e.inputType.startsWith('delete')) {
+        e.preventDefault();
+        const isForward = e.inputType.toLowerCase().includes('forward');
+        let start = desiredSelectionStart;
+        let end = desiredSelectionEnd;
+        if (start === end) {
+          if (isForward && end < desiredText.length) end++;
+          if (!isForward && start > 0) start--;
+        }
+        desiredText = desiredText.slice(0, start) + desiredText.slice(end);
+        desiredSelectionStart = start;
+        desiredSelectionEnd = start;
+        scheduleBufferProcessing();
+        return;
+      }
+
+      let insertedData = e.data || '';
+      if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') insertedData = '\n';
+      if (!insertedData) return;
+
+      // Se inseriu mais de 1 caractere de uma vez só (ex: extensão de preenchimento ou script)
+      if (insertedData.length > 1) {
+        e.preventDefault();
+        triggerBlockFeedback(`Injeção em lote de ${insertedData.length} caracteres bloqueada!`);
+        return;
+      }
+
+      e.preventDefault();
+      enqueueInsertion(insertedData);
+    });
+
+    // 3. Sincroniza alterações nativas que não passaram pelo interceptador
+    editor.addEventListener('input', () => {
+      desiredText = getEditorText();
+      const selection = quill.getSelection() || { index: desiredText.length, length: 0 };
+      desiredSelectionStart = selection.index;
+      desiredSelectionEnd = selection.index + selection.length;
+      updateMetricsUI();
+      updateBufferUI();
+    });
+
+    // Monitor de Backspaces e Atalhos
+    editor.addEventListener('keydown', (e) => {
+      if (((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) || (e.shiftKey && e.key === 'Insert')) {
+        e.preventDefault();
+        pasteAttempts++;
+        triggerBlockFeedback('Atalho de colagem desativado!');
+        return;
+      }
+
+      const navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'];
+      if (getPendingBufferSize() > 0 && navigationKeys.includes(e.key)) {
+        flushBufferImmediately();
+      }
+
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        backspaceCount++;
+      }
+    });
+
+    editor.addEventListener('mousedown', (e) => {
+      if (getPendingBufferSize() > 0) {
+        flushBufferImmediately();
+      }
+    });
+
+    // 4. Monitor de Troca de Aba
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        tabSwitchCount++;
+        blurCountElem.innerText = tabSwitchCount;
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      if (!document.hidden) {
+        tabSwitchCount++;
+        blurCountElem.innerText = tabSwitchCount;
+      }
+    });
+
+    // 5. Atualização de Interface
+    function updateMetricsUI() {
+      const text = getEditorText();
+      const words = getCurrentWordCount(text);
+      const chars = text.length;
+
+      wordCountElem.innerText = words;
+      charCountElem.innerText = chars;
+
+      updateWPM(words);
+    }
+
+    function updateTimer() {
+      secondsActive++;
+      const mins = String(Math.floor(secondsActive / 60)).padStart(2, '0');
+      const secs = String(secondsActive % 60).padStart(2, '0');
+      timeSpentElem.innerText = `${mins}:${secs}`;
+      updateWPM(getCurrentWordCount(getEditorText()));
+    }
+
+    function updateWPM(words) {
+      if (secondsActive > 10) {
+        const minutes = secondsActive / 60;
+        const wpm = Math.round(words / minutes);
+        wpmElem.innerText = isFinite(wpm) ? wpm : 0;
+      }
+    }
+
+    // 6. Criptografia SHA-256 Nativa
+    async function generateVerificationHash(payloadString) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(payloadString);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function normalizeSubmittedText(value) {
+      return value.normalize('NFC').replace(/\s+/g, ' ').trim();
+    }
+
+    function encodeBase64Url(value) {
+      const bytes = new TextEncoder().encode(value);
+      let binary = '';
+      bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function decodeBase64Url(value) {
+      const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    function buildCanonicalPayload(metadata, submittedText) {
+      if (metadata.versao === 2) {
+        return JSON.stringify({
+          versao: 2,
+          aplicativo: 'O Digitador Fiel',
+          relatorioId: metadata.relatorioId,
+          aluno: metadata.aluno,
+          matricula: metadata.matricula,
+          disciplina: metadata.disciplina,
+          emissaoISO: metadata.emissaoISO,
+          tempoTotalSegundos: metadata.tempoTotalSegundos,
+          totalPalavras: metadata.totalPalavras,
+          totalCaracteres: metadata.totalCaracteres,
+          toquesValidos: metadata.toquesValidos,
+          correcoes: metadata.correcoes,
+          bloqueiosVelocidade: metadata.bloqueiosVelocidade,
+          tentativasColagem: metadata.tentativasColagem,
+          saidasAba: metadata.saidasAba,
+          ppmMedio: metadata.ppmMedio,
+          textoNormalizado: normalizeSubmittedText(submittedText)
+        });
+      }
+
+      return JSON.stringify({
+        versao: 1,
+        aplicativo: 'O Digitador Fiel',
+        relatorioId: metadata.relatorioId,
+        aluno: metadata.aluno,
+        matricula: metadata.matricula,
+        emissaoISO: metadata.emissaoISO,
+        tempoTotalSegundos: metadata.tempoTotalSegundos,
+        totalPalavras: metadata.totalPalavras,
+        totalCaracteres: metadata.totalCaracteres,
+        toquesValidos: metadata.toquesValidos,
+        correcoes: metadata.correcoes,
+        bloqueiosVelocidade: metadata.bloqueiosVelocidade,
+        tentativasColagem: metadata.tentativasColagem,
+        saidasAba: metadata.saidasAba,
+        ppmMedio: metadata.ppmMedio,
+        textoNormalizado: normalizeSubmittedText(submittedText)
+      });
+    }
+
+    function makeReportId() {
+      if (crypto.randomUUID) return crypto.randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase();
+      const bytes = crypto.getRandomValues(new Uint8Array(8));
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    function packMetadata(metadata) {
+      return [
+        2, metadata.relatorioId, metadata.aluno, metadata.matricula, metadata.disciplina, metadata.emissaoISO,
+        metadata.tempoTotalSegundos, metadata.totalPalavras, metadata.totalCaracteres,
+        metadata.toquesValidos, metadata.correcoes, metadata.bloqueiosVelocidade,
+        metadata.tentativasColagem, metadata.saidasAba, metadata.ppmMedio
+      ];
+    }
+
+    function unpackMetadata(packed) {
+      if (Array.isArray(packed) && packed.length === 14 && packed[0] === 1) {
+        return {
+          versao: 1,
+          relatorioId: packed[1], aluno: packed[2], matricula: packed[3], disciplina: 'Não informada', emissaoISO: packed[4],
+          tempoTotalSegundos: packed[5], totalPalavras: packed[6], totalCaracteres: packed[7],
+          toquesValidos: packed[8], correcoes: packed[9], bloqueiosVelocidade: packed[10],
+          tentativasColagem: packed[11], saidasAba: packed[12], ppmMedio: packed[13]
+        };
+      }
+
+      if (Array.isArray(packed) && packed.length === 15 && packed[0] === 2) {
+        return {
+          versao: 2,
+          relatorioId: packed[1], aluno: packed[2], matricula: packed[3], disciplina: packed[4], emissaoISO: packed[5],
+          tempoTotalSegundos: packed[6], totalPalavras: packed[7], totalCaracteres: packed[8],
+          toquesValidos: packed[9], correcoes: packed[10], bloqueiosVelocidade: packed[11],
+          tentativasColagem: packed[12], saidasAba: packed[13], ppmMedio: packed[14]
+        };
+      }
+
+      throw new Error('Versão do código não reconhecida.');
+    }
+
+    function openVerifier(code = '', text = '') {
+      verificationCodeInput.value = code;
+      verificationTextInput.value = text;
+      verificationResult.className = 'verify-result';
+      verificationResult.textContent = '';
+      verifyModal.classList.add('show');
+      setTimeout(() => verificationCodeInput.focus(), 0);
+    }
+
+    function closeVerifier() {
+      verifyModal.classList.remove('show');
+    }
+
+    btnVerify.addEventListener('click', () => openVerifier());
+    btnCloseVerify.addEventListener('click', closeVerifier);
+    verifyModal.addEventListener('click', (event) => {
+      if (event.target === verifyModal) closeVerifier();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeVerifier();
+    });
+
+    btnRunVerification.addEventListener('click', async () => {
+      try {
+        const parts = verificationCodeInput.value.replace(/\s+/g, '').split('.');
+        if (parts.length !== 3 || !/^ODF[12]$/.test(parts[0])) throw new Error('Código inválido ou incompleto.');
+
+        const metadata = unpackMetadata(JSON.parse(decodeBase64Url(parts[1])));
+        if (parts[0] !== `ODF${metadata.versao}`) throw new Error('A versão do código não corresponde aos dados.');
+        const expectedHash = parts[2].toLowerCase();
+        if (!/^[a-f0-9]{64}$/.test(expectedHash)) throw new Error('Assinatura SHA-256 inválida.');
+
+        const payload = buildCanonicalPayload(metadata, verificationTextInput.value);
+        const actualHash = await generateVerificationHash(payload);
+        const matches = actualHash === expectedHash;
+
+        verificationResult.className = `verify-result ${matches ? 'valid' : 'invalid'}`;
+        verificationResult.replaceChildren();
+        const resultTitle = document.createElement('strong');
+        resultTitle.textContent = matches ? 'Integridade confirmada.' : 'Verificação falhou.';
+        verificationResult.appendChild(resultTitle);
+        if (matches) {
+          verificationResult.append(
+            document.createElement('br'),
+            `Relatório: ${metadata.relatorioId}`,
+            document.createElement('br'),
+            `Disciplina: ${metadata.disciplina}`,
+            document.createElement('br'),
+            'O conteúdo e os dados correspondem ao código. Isso detecta alterações, mas não substitui uma assinatura digital emitida por servidor.'
+          );
+        } else {
+          verificationResult.append(
+            document.createElement('br'),
+            'O conteúdo colado ou algum dado do relatório foi alterado, ou o código não pertence a este documento.'
+          );
+        }
+      } catch (error) {
+        verificationResult.className = 'verify-result invalid';
+        verificationResult.textContent = error.message || 'Não foi possível verificar este código.';
+      }
+    });
+
+    // 7. Relatório PDF Completo
+    btnGeneratePdf.addEventListener('click', async () => {
+      const studentName = studentNameInput.value.trim() || 'Não informado';
+      const studentId = studentIdInput.value.trim() || 'Não informado';
+      const subjectName = subjectNameInput.value.trim() || 'Não informada';
+      const rawText = getEditorText();
+      const leadingWhitespace = rawText.length - rawText.trimStart().length;
+      const text = rawText.trim();
+      const formattedOps = quill.getContents(leadingWhitespace, text.length).ops;
+      const words = getCurrentWordCount(text);
+
+      if (!text) {
+        showToast('⚠️ O editor está vazio. Digite seu texto antes de gerar o relatório.');
+        return;
+      }
+
+      const timestamp = new Date().toISOString();
+      const metadata = {
+        versao: 2,
+        relatorioId: makeReportId(),
+        aluno: studentName,
+        matricula: studentId,
+        disciplina: subjectName,
+        emissaoISO: timestamp,
+        tempoTotalSegundos: secondsActive,
+        totalPalavras: words,
+        totalCaracteres: text.length,
+        toquesValidos: validKeystrokes,
+        correcoes: backspaceCount,
+        bloqueiosVelocidade: bufferedKeystrokes,
+        tentativasColagem: pasteAttempts,
+        saidasAba: tabSwitchCount,
+        ppmMedio: Number(wpmElem.innerText) || 0
+      };
+
+      const canonicalPayload = buildCanonicalPayload(metadata, text);
+      const cryptoHash = await generateVerificationHash(canonicalPayload);
+      const verificationCode = `ODF${metadata.versao}.${encodeBase64Url(JSON.stringify(packMetadata(metadata)))}.${cryptoHash}`;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const contentTop = 35;
+      const contentBottom = 220;
+      const lineHeight = 5.1;
+      let cursorY = contentTop;
+
+      doc.setProperties({
+        title: `O Digitador Fiel - Relatório ${metadata.relatorioId}`,
+        subject: `Código de verificação: ${verificationCode}`,
+        author: 'O Digitador Fiel',
+        creator: 'O Digitador Fiel'
+      });
+
+      function drawHeader(isContinuation = false) {
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, pageWidth, 24, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.text('O DIGITADOR FIEL', 14, 11);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text('Relatório de escrita monitorada', 14, 17);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.setTextColor(30, 41, 59);
+        doc.text(isContinuation ? 'CONTEÚDO SUBMETIDO - CONTINUAÇÃO' : 'CONTEÚDO SUBMETIDO', 14, 31);
+      }
+
+      drawHeader(false);
+      let cursorX = 14;
+      const contentRight = pageWidth - 14;
+      let activeIndent = 14;
+      let activeLineHeight = lineHeight;
+
+      function getRunFontSize(attributes = {}) {
+        const sizes = { small: 8, large: 12, huge: 15 };
+        return sizes[attributes.size] || 9.5;
+      }
+
+      function setRunStyle(attributes = {}) {
+        const style = attributes.bold && attributes.italic
+          ? 'bolditalic'
+          : attributes.bold
+            ? 'bold'
+            : attributes.italic
+              ? 'italic'
+              : 'normal';
+        doc.setFont('helvetica', style);
+        doc.setFontSize(getRunFontSize(attributes));
+        doc.setTextColor(30, 41, 59);
+      }
+
+      function nextContentLine() {
+        cursorX = activeIndent;
+        cursorY += activeLineHeight;
+        if (cursorY > contentBottom) {
+          doc.addPage();
+          drawHeader(true);
+          cursorY = contentTop;
+        }
+      }
+
+      function drawStyledPiece(piece, attributes) {
+        setRunStyle(attributes);
+        const width = doc.getTextWidth(piece);
+        doc.text(piece, cursorX, cursorY);
+        if (attributes.underline && width > 0) {
+          doc.setDrawColor(30, 41, 59);
+          doc.setLineWidth(0.18);
+          doc.line(cursorX, cursorY + 0.7, cursorX + width, cursorY + 0.7);
+        }
+        cursorX += width;
+      }
+
+      function drawStyledRun(runText, attributes = {}) {
+        const tokens = runText.split(/([ \t]+)/).filter(token => token !== '');
+        for (const token of tokens) {
+          setRunStyle(attributes);
+          if (/^[ \t]+$/.test(token)) {
+            const spaceWidth = doc.getTextWidth(token);
+            if (cursorX + spaceWidth > contentRight) nextContentLine();
+            else cursorX += spaceWidth;
+            continue;
+          }
+
+          let remaining = token;
+          while (remaining) {
+            setRunStyle(attributes);
+            if (cursorX > activeIndent && cursorX + doc.getTextWidth(remaining) > contentRight) {
+              nextContentLine();
+            }
+
+            const available = contentRight - cursorX;
+            let take = remaining.length;
+            while (take > 1 && doc.getTextWidth(remaining.slice(0, take)) > available) take--;
+            const piece = remaining.slice(0, take);
+            drawStyledPiece(piece, attributes);
+            remaining = remaining.slice(take);
+            if (remaining) nextContentLine();
+          }
+        }
+      }
+
+      const contentLines = [];
+      let currentSegments = [];
+      formattedOps.forEach(operation => {
+        if (typeof operation.insert !== 'string') return;
+        const parts = operation.insert.split('\n');
+        parts.forEach((part, index) => {
+          if (part) currentSegments.push({ text: part, attributes: operation.attributes || {} });
+          if (index < parts.length - 1) {
+            contentLines.push({ segments: currentSegments });
+            currentSegments = [];
+          }
+        });
+      });
+      contentLines.push({ segments: currentSegments });
+
+      let absoluteLineEnd = leadingWhitespace;
+      contentLines.forEach((line, index) => {
+        const plainLine = text.split('\n')[index] || '';
+        line.attributes = quill.getFormat(absoluteLineEnd + plainLine.length, 1);
+        absoluteLineEnd += plainLine.length + 1;
+      });
+
+      let orderedListNumber = 0;
+      contentLines.forEach((line, lineIndex) => {
+        const listType = line.attributes.list;
+        if (listType === 'ordered') orderedListNumber++;
+        else orderedListNumber = 0;
+
+        const largestFontSize = line.segments.reduce(
+          (largest, segment) => Math.max(largest, getRunFontSize(segment.attributes)),
+          9.5
+        );
+        activeLineHeight = Math.max(lineHeight, largestFontSize * 0.46);
+        activeIndent = listType ? 22 : 14;
+        cursorX = activeIndent;
+
+        if (listType) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(30, 41, 59);
+          doc.text(listType === 'ordered' ? `${orderedListNumber}.` : '•', 14, cursorY);
+        }
+
+        line.segments.forEach(segment => drawStyledRun(segment.text, segment.attributes));
+        if (lineIndex < contentLines.length - 1) nextContentLine();
+      });
+
+      // Rodapé fixo com identificação, telemetria e prova de integridade
+      const totalPages = doc.internal.getNumberOfPages();
+
+      function drawPdfLink(label, url, x, y) {
+        doc.setTextColor(2, 132, 199);
+        doc.text(label, x, y);
+        const width = doc.getTextWidth(label);
+        doc.link(x, y - 2.5, width, 3.5, { url });
+        return x + width;
+      }
+
+      for (let j = 1; j <= totalPages; j++) {
+        doc.setPage(j);
+        const footerY = 226;
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(203, 213, 225);
+        doc.roundedRect(10, footerY, pageWidth - 20, 61, 2, 2, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text('IDENTIFICAÇÃO E TELEMETRIA', 14, footerY + 6);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(51, 65, 85);
+        doc.text(`Aluno: ${studentName}`, 14, footerY + 12, { maxWidth: 100 });
+        doc.text(`Matrícula / RA: ${studentId}`, 118, footerY + 12, { maxWidth: 45 });
+        doc.text(`Disciplina: ${subjectName}`, 14, footerY + 18, { maxWidth: 100 });
+        doc.text(`Relatório: ${metadata.relatorioId}`, 118, footerY + 18, { maxWidth: 48 });
+        doc.setFontSize(6.5);
+        doc.text(`Emissão: ${new Date(timestamp).toLocaleString('pt-BR')} | Tempo: ${timeSpentElem.innerText} | Palavras: ${words} | Caracteres: ${text.length}`, 14, footerY + 24);
+        doc.text(`PPM: ${metadata.ppmMedio} | Toques válidos: ${validKeystrokes} | Correções: ${backspaceCount} | Desacelerados: ${bufferedKeystrokes} | Colagens: ${pasteAttempts} | Saídas: ${tabSwitchCount}`, 14, footerY + 30);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.text('INTEGRIDADE SHA-256', 14, footerY + 37);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(5.7);
+        doc.text(cryptoHash, 14, footerY + 42);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.5);
+        doc.setTextColor(71, 85, 105);
+        doc.text('Código para verificação no aplicativo:', 14, footerY + 48);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(4.2);
+        const codeLines = doc.splitTextToSize(verificationCode, pageWidth - 28);
+        doc.text(codeLines, 14, footerY + 52, { lineHeightFactor: 1.05 });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.7);
+        drawPdfLink(
+          'Aplicativo: github.com/GlauberLASantiago/o-digitador-fiel',
+          'https://github.com/GlauberLASantiago/o-digitador-fiel',
+          14,
+          footerY + 58
+        );
+
+        doc.text(`Página ${j} de ${totalPages}`, pageWidth - 14, pageHeight - 5, { align: 'right' });
+        doc.text('Integridade verificável; não equivale a assinatura digital de um emissor.', 14, pageHeight - 5);
+      }
+
+      const safeFilename = `o-digitador-fiel-${studentName.replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '_').toLowerCase()}-${metadata.relatorioId}.pdf`;
+      doc.save(safeFilename);
+      showToast('✅ Relatório PDF gerado com conteúdo em destaque!');
+    });
+  </script>
+</body>
+</html>
