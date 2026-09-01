@@ -1507,7 +1507,18 @@ O fundamento pedagógico deste sistema é valorizar o percurso de produção tex
         doc.text('Integridade verificável; não equivale a assinatura digital de um emissor.', 14, pageHeight - 5);
       }
 
-      const safeFilename = `o-digitador-fiel-${studentName.replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '_').toLowerCase()}-${metadata.relatorioId}.pdf`;
+      const generatedAt = new Date(timestamp);
+      const padFilenamePart = value => String(value).padStart(2, '0');
+      const filenameDateTime = [
+        padFilenamePart(generatedAt.getDate()),
+        padFilenamePart(generatedAt.getMonth() + 1),
+        generatedAt.getFullYear()
+      ].join('-') + '_' + [
+        `${padFilenamePart(generatedAt.getHours())}h`,
+        `${padFilenamePart(generatedAt.getMinutes())}m`,
+        `${padFilenamePart(generatedAt.getSeconds())}s`
+      ].join('');
+      const safeFilename = `ODF-${studentName.replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '_').toLowerCase()}-${filenameDateTime}.pdf`;
       doc.save(safeFilename);
       showToast('✅ Relatório PDF gerado com conteúdo em destaque!');
     });
