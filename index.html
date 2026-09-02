@@ -235,9 +235,9 @@
     .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: var(--primary); }
     .ql-editor.ql-blank::before {
       color: var(--text-muted);
+      display: block;
       font-style: normal;
-      left: 1.25rem;
-      right: 1.25rem;
+      position: static;
       white-space: pre-line;
     }
 
@@ -490,7 +490,7 @@
     <div class="student-bar">
       <div class="input-group">
         <label for="studentName">Nome Completo do Aluno: <strong aria-hidden="true">*</strong></label>
-        <input type="text" id="studentName" placeholder="Ex: Glauber Santiago" required aria-required="true">
+        <input type="text" id="studentName" placeholder="Ex: Rebualg da Silva" required aria-required="true">
       </div>
       <div class="input-group">
         <label for="studentId">Matrícula / RA:</label>
@@ -569,9 +569,9 @@
     const BUFFER_WARNING_MS = 5000; // Alerta visual; nunca descarta caracteres da fila
     const MAX_CHARACTERS = 2000;
 
-    const EDITOR_HELP_TEXT = `Digite seu texto diretamente neste espaço. Colagens e inserções automáticas são bloqueadas para que o relatório registre o processo real de escrita. Se você digitar muito rapidamente, os caracteres serão guardados temporariamente e aparecerão em sequência, sem serem perdidos.
+    const EDITOR_HELP_TEXT = `ESTUDANTE: Digite aqui o seu texto. Você precisará digitar cada caractere, pois o aplicativo não aceita copiar e colar nem arrastar textos de outros locais do computador. O objetivo é registrar uma produção escrita realizada diretamente neste espaço, dificultando a simples reprodução de conteúdos obtidos na internet, produzidos por outras pessoas ou gerados por inteligência artificial. O aplicativo também controla a velocidade com que os caracteres aparecem. Nenhuma tecla digitada corretamente será descartada: se você digitar muito rapidamente, os caracteres ficarão aguardando por alguns instantes e aparecerão em sequência. Se você for um digitador muito veloz, pedimos um pouco de paciência. Quando terminar, informe seu nome completo e clique em Gerar texto/relatório para obter o arquivo em PDF solicitado pelo professor.
 
-O fundamento pedagógico deste sistema é valorizar o percurso de produção textual, e não apenas o resultado final. A escrita direta permite ao estudante exercitar organização de ideias, fluência, revisão, correção e autoria. As informações registradas servem como apoio à avaliação formativa do professor e não devem ser interpretadas isoladamente como prova de aprendizagem, fraude ou uso de inteligência artificial.`;
+PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em outro local, como o Moodle, um ambiente virtual de aprendizagem ou uma página da internet. O Digitador Fiel pode ser aberto separadamente ou incorporado a uma página por meio do botão Incorporar. Este aplicativo serve para o estudante digitar o texto e gerar um relatório em PDF com o conteúdo produzido e alguns dados do processo de escrita. A finalidade é dificultar que um texto pronto seja simplesmente copiado e colado. O relatório não comprova que o estudante criou intelectualmente o texto nem que foi ele próprio quem o digitou. Outra pessoa ainda poderia realizar a digitação em seu lugar. O sistema oferece apenas indícios de que o conteúdo foi inserido caractere por caractere no editor e registra informações sobre esse processo. Se houver dúvida sobre um relatório, utilize a função Verificar relatório. Ela permite conferir se o conteúdo e os dados apresentados correspondem ao código de verificação e se foram alterados depois da geração do PDF. Em resumo, o aplicativo não garante a autoria do texto. Sua proposta é tornar mais difícil a entrega imediata de um conteúdo pronto, incentivando a digitação, a revisão e o envolvimento do estudante com a produção escrita. É daí que vem o nome O Digitador Fiel.`;
 
     const quill = new Quill('#textEditor', {
       theme: 'snow',
