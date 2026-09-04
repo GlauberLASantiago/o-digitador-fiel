@@ -8,6 +8,7 @@
   
   <!-- jsPDF via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 
@@ -26,6 +27,12 @@
       --blocked-bg: #2b131e;
       --note-bg: rgba(56, 189, 248, 0.08);
       --note-border: rgba(56, 189, 248, 0.35);
+      --verify-valid-text: #bbf7d0;
+      --verify-valid-bg: rgba(34, 197, 94, 0.14);
+      --verify-valid-border: rgba(34, 197, 94, 0.5);
+      --verify-invalid-text: #fecaca;
+      --verify-invalid-bg: rgba(239, 68, 68, 0.14);
+      --verify-invalid-border: rgba(239, 68, 68, 0.5);
     }
 
     :root[data-theme="palette1"] {
@@ -74,6 +81,17 @@
       --blocked-bg: #fee2e2;
       --note-bg: #e0f2fe;
       --note-border: #7dd3fc;
+    }
+
+    :root[data-theme="palette1"],
+    :root[data-theme="palette2"],
+    :root[data-theme="light"] {
+      --verify-valid-text: #14532d;
+      --verify-valid-bg: #dcfce7;
+      --verify-valid-border: #16a34a;
+      --verify-invalid-text: #7f1d1d;
+      --verify-invalid-bg: #fee2e2;
+      --verify-invalid-border: #dc2626;
     }
 
     * {
@@ -382,27 +400,52 @@
       font-size: 1.5rem;
     }
 
-    .verify-field { margin-bottom: 0.85rem; }
-    .verify-field label {
-      display: block;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      margin-bottom: 0.35rem;
+    .pdf-drop-zone {
+      display: flex;
+      min-height: 230px;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      background: var(--note-bg);
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
     }
 
-    .verify-field input,
-    .verify-field textarea {
-      width: 100%;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.7rem;
-      font-size: 0.9rem;
+    .pdf-drop-zone:hover,
+    .pdf-drop-zone:focus-visible,
+    .pdf-drop-zone.dragging {
+      border-color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 14%, transparent);
       outline: none;
     }
 
-    .verify-field textarea { height: 170px; resize: vertical; }
+    .pdf-drop-zone.dragging { transform: scale(1.01); }
+    .pdf-drop-zone.processing { cursor: wait; opacity: 0.7; }
+    .pdf-drop-zone-content { display: block; }
+    .pdf-drop-zone-icon { font-size: 2.8rem; line-height: 1; margin-bottom: 0.8rem; }
+    .pdf-drop-zone strong { display: block; font-size: 1.05rem; }
+    .pdf-drop-zone-hint {
+      display: block;
+      margin-top: 0.45rem;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
 
     .verify-result {
       display: none;
@@ -415,16 +458,23 @@
 
     .verify-result.valid {
       display: block;
-      color: #bbf7d0;
-      background: rgba(34, 197, 94, 0.14);
-      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: var(--verify-valid-text);
+      background: var(--verify-valid-bg);
+      border: 1px solid var(--verify-valid-border);
     }
 
     .verify-result.invalid {
       display: block;
-      color: #fecaca;
-      background: rgba(239, 68, 68, 0.14);
-      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: var(--verify-invalid-text);
+      background: var(--verify-invalid-bg);
+      border: 1px solid var(--verify-invalid-border);
+    }
+
+    .verify-result.processing {
+      display: block;
+      color: var(--text);
+      background: var(--note-bg);
+      border: 1px solid var(--note-border);
     }
 
     /* Toast */
@@ -546,20 +596,19 @@
       <div class="modal-header">
         <div>
           <h2 id="verifyTitle">Verificar integridade do relatório</h2>
-          <div class="rules-tag">Cole o código impresso no PDF e o conteúdo submetido.</div>
+          <div class="rules-tag">A verificação acontece no seu navegador.</div>
         </div>
         <button id="btnCloseVerify" class="modal-close" aria-label="Fechar">×</button>
       </div>
-      <div class="verify-field">
-        <label for="verificationCode">Código de verificação</label>
-        <input id="verificationCode" type="text" placeholder="ODF1.eyJ...">
-      </div>
-      <div class="verify-field">
-        <label for="verificationText">Conteúdo submetido (copie do PDF)</label>
-        <textarea id="verificationText" placeholder="Cole aqui exatamente o conteúdo do relatório..."></textarea>
-      </div>
-      <button id="btnRunVerification" class="btn">Verificar agora</button>
-      <div id="verificationResult" class="verify-result"></div>
+      <label id="pdfDropZone" class="pdf-drop-zone" for="verificationPdf" tabindex="0">
+        <span class="pdf-drop-zone-content">
+          <span class="pdf-drop-zone-icon" aria-hidden="true">📄</span>
+          <strong>Arraste o relatório PDF para cá</strong>
+          <span class="pdf-drop-zone-hint">ou clique para escolher o arquivo. O PDF não é enviado a nenhum servidor.</span>
+        </span>
+      </label>
+      <input id="verificationPdf" class="visually-hidden" type="file" accept="application/pdf,.pdf">
+      <div id="verificationResult" class="verify-result" role="status" aria-live="polite"></div>
     </div>
   </div>
 
@@ -602,10 +651,13 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
     const btnVerify = document.getElementById('btnVerify');
     const verifyModal = document.getElementById('verifyModal');
     const btnCloseVerify = document.getElementById('btnCloseVerify');
-    const btnRunVerification = document.getElementById('btnRunVerification');
-    const verificationCodeInput = document.getElementById('verificationCode');
-    const verificationTextInput = document.getElementById('verificationText');
+    const pdfDropZone = document.getElementById('pdfDropZone');
+    const verificationPdfInput = document.getElementById('verificationPdf');
     const verificationResult = document.getElementById('verificationResult');
+
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
 
     studentNameInput.addEventListener('input', () => {
       if (studentNameInput.value.trim()) studentNameInput.setCustomValidity('');
@@ -1165,13 +1217,13 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
       throw new Error('Versão do código não reconhecida.');
     }
 
-    function openVerifier(code = '', text = '') {
-      verificationCodeInput.value = code;
-      verificationTextInput.value = text;
+    function openVerifier() {
+      verificationPdfInput.value = '';
       verificationResult.className = 'verify-result';
       verificationResult.textContent = '';
+      pdfDropZone.classList.remove('dragging', 'processing');
       verifyModal.classList.add('show');
-      setTimeout(() => verificationCodeInput.focus(), 0);
+      setTimeout(() => pdfDropZone.focus(), 0);
     }
 
     function closeVerifier() {
@@ -1187,45 +1239,180 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
       if (event.key === 'Escape') closeVerifier();
     });
 
-    btnRunVerification.addEventListener('click', async () => {
-      try {
-        const parts = verificationCodeInput.value.replace(/\s+/g, '').split('.');
-        if (parts.length !== 3 || !/^ODF[12]$/.test(parts[0])) throw new Error('Código inválido ou incompleto.');
+    function readVerificationCode(value) {
+      const match = String(value || '').match(/ODF[12]\.[A-Za-z0-9_-]+\.[a-fA-F0-9]{64}/);
+      if (!match) throw new Error('Este arquivo não contém um código de verificação reconhecido.');
+      return match[0];
+    }
 
-        const metadata = unpackMetadata(JSON.parse(decodeBase64Url(parts[1])));
-        if (parts[0] !== `ODF${metadata.versao}`) throw new Error('A versão do código não corresponde aos dados.');
-        const expectedHash = parts[2].toLowerCase();
-        if (!/^[a-f0-9]{64}$/.test(expectedHash)) throw new Error('Assinatura SHA-256 inválida.');
+    function readEmbeddedSubmittedText(info) {
+      const match = String(info?.Keywords || '').match(/ODF-TEXTO:([A-Za-z0-9_-]+)/);
+      return match ? decodeBase64Url(match[1]) : '';
+    }
 
-        const payload = buildCanonicalPayload(metadata, verificationTextInput.value);
-        const actualHash = await generateVerificationHash(payload);
-        const matches = actualHash === expectedHash;
+    function joinPdfTextItems(items) {
+      let output = '';
+      let previous = null;
 
-        verificationResult.className = `verify-result ${matches ? 'valid' : 'invalid'}`;
-        verificationResult.replaceChildren();
-        const resultTitle = document.createElement('strong');
-        resultTitle.textContent = matches ? 'Integridade confirmada.' : 'Verificação falhou.';
-        verificationResult.appendChild(resultTitle);
-        if (matches) {
-          verificationResult.append(
-            document.createElement('br'),
-            `Relatório: ${metadata.relatorioId}`,
-            document.createElement('br'),
-            `Disciplina: ${metadata.disciplina}`,
-            document.createElement('br'),
-            'O conteúdo e os dados correspondem ao código. Isso detecta alterações, mas não substitui uma assinatura digital emitida por servidor.'
-          );
-        } else {
-          verificationResult.append(
-            document.createElement('br'),
-            'O conteúdo colado ou algum dado do relatório foi alterado, ou o código não pertence a este documento.'
-          );
+      for (const item of items) {
+        if (!item.str) continue;
+        if (previous) {
+          const sameLine = Math.abs(item.transform[5] - previous.transform[5]) < 1.5;
+          const previousEnd = previous.transform[4] + previous.width;
+          const gap = item.transform[4] - previousEnd;
+          if (!sameLine || gap > Math.max(1.2, item.height * 0.12)) output += ' ';
         }
+        output += item.str;
+        previous = item;
+      }
+
+      return output;
+    }
+
+    async function extractPdfReport(pdfDocument) {
+      const submittedPages = [];
+      const allPages = [];
+
+      for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
+        const page = await pdfDocument.getPage(pageNumber);
+        const textContent = await page.getTextContent();
+        const items = textContent.items.filter(item => typeof item.str === 'string');
+        const allText = items.map(item => item.str).join(' ');
+        allPages.push(allText);
+
+        const contentStart = items.findIndex(item => item.str.includes('CONTEÚDO SUBMETIDO'));
+        const footerStart = items.findIndex((item, index) => index > contentStart && item.str.includes('IDENTIFICAÇÃO E TELEMETRIA'));
+        if (contentStart >= 0 && footerStart > contentStart) {
+          submittedPages.push(joinPdfTextItems(items.slice(contentStart + 1, footerStart)));
+        }
+      }
+
+      return {
+        submittedText: normalizeSubmittedText(submittedPages.join(' ')),
+        allText: allPages.join(' ')
+      };
+    }
+
+    async function validateReportData(code, submittedText) {
+      const parts = code.replace(/\s+/g, '').split('.');
+      if (parts.length !== 3 || !/^ODF[12]$/.test(parts[0])) throw new Error('Código inválido ou incompleto.');
+
+      const metadata = unpackMetadata(JSON.parse(decodeBase64Url(parts[1])));
+      if (parts[0] !== `ODF${metadata.versao}`) throw new Error('A versão do código não corresponde aos dados.');
+      const expectedHash = parts[2].toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(expectedHash)) throw new Error('Assinatura SHA-256 inválida.');
+
+      const payload = buildCanonicalPayload(metadata, submittedText);
+      const actualHash = await generateVerificationHash(payload);
+      return { metadata, matches: actualHash === expectedHash };
+    }
+
+    function showVerificationResult(matches, metadata, fileName, visibleContentMatches = true) {
+      const valid = matches && visibleContentMatches;
+      verificationResult.className = `verify-result ${valid ? 'valid' : 'invalid'}`;
+      verificationResult.replaceChildren();
+      const resultTitle = document.createElement('strong');
+      resultTitle.textContent = valid ? '✓ Relatório íntegro' : '✕ Não foi possível confirmar a integridade';
+      verificationResult.appendChild(resultTitle);
+
+      if (valid) {
+        verificationResult.append(
+          document.createElement('br'),
+          fileName,
+          document.createElement('br'),
+          `Relatório: ${metadata.relatorioId}`,
+          document.createElement('br'),
+          `Aluno: ${metadata.aluno}`,
+          document.createElement('br'),
+          `Disciplina: ${metadata.disciplina}`,
+          document.createElement('br'),
+          'O conteúdo e os dados correspondem ao código de verificação.'
+        );
+      } else {
+        verificationResult.append(
+          document.createElement('br'),
+          `${fileName}: o conteúdo ou os dados do relatório foram alterados, ou o código não pertence a este documento.`
+        );
+      }
+    }
+
+    async function verifyPdfFile(file) {
+      if (!file) return;
+      if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+        verificationResult.className = 'verify-result invalid';
+        verificationResult.textContent = 'Escolha um arquivo no formato PDF.';
+        return;
+      }
+      if (file.size > 25 * 1024 * 1024) {
+        verificationResult.className = 'verify-result invalid';
+        verificationResult.textContent = 'O PDF é muito grande. O limite para verificação é 25 MB.';
+        return;
+      }
+      if (!window.pdfjsLib) {
+        verificationResult.className = 'verify-result invalid';
+        verificationResult.textContent = 'Não foi possível carregar o leitor de PDF. Verifique sua conexão e tente novamente.';
+        return;
+      }
+
+      pdfDropZone.classList.add('processing');
+      verificationPdfInput.disabled = true;
+      verificationResult.className = 'verify-result processing';
+      verificationResult.textContent = `Verificando ${file.name}…`;
+      let pdfDocument;
+
+      try {
+        pdfDocument = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+        const pdfMetadata = await pdfDocument.getMetadata();
+        const extracted = await extractPdfReport(pdfDocument);
+        const code = readVerificationCode(pdfMetadata.info?.Subject || extracted.allText);
+        const embeddedText = readEmbeddedSubmittedText(pdfMetadata.info);
+        const submittedText = embeddedText || extracted.submittedText;
+        if (!submittedText) throw new Error('Não foi possível localizar o conteúdo submetido neste relatório.');
+
+        const result = await validateReportData(code, submittedText);
+        const visibleContentMatches = !embeddedText || embeddedText === extracted.submittedText;
+        showVerificationResult(result.matches, result.metadata, file.name, visibleContentMatches);
       } catch (error) {
         verificationResult.className = 'verify-result invalid';
-        verificationResult.textContent = error.message || 'Não foi possível verificar este código.';
+        verificationResult.textContent = error.message || 'Não foi possível verificar este PDF.';
+      } finally {
+        if (pdfDocument) await pdfDocument.destroy();
+        verificationPdfInput.disabled = false;
+        verificationPdfInput.value = '';
+        pdfDropZone.classList.remove('processing', 'dragging');
+      }
+    }
+
+    let dragDepth = 0;
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      pdfDropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    });
+    pdfDropZone.addEventListener('dragenter', () => {
+      dragDepth++;
+      pdfDropZone.classList.add('dragging');
+    });
+    pdfDropZone.addEventListener('dragleave', () => {
+      dragDepth--;
+      if (dragDepth <= 0) {
+        dragDepth = 0;
+        pdfDropZone.classList.remove('dragging');
       }
     });
+    pdfDropZone.addEventListener('drop', event => {
+      dragDepth = 0;
+      pdfDropZone.classList.remove('dragging');
+      verifyPdfFile(event.dataTransfer.files[0]);
+    });
+    pdfDropZone.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        verificationPdfInput.click();
+      }
+    });
+    verificationPdfInput.addEventListener('change', () => verifyPdfFile(verificationPdfInput.files[0]));
 
     // 7. Relatório PDF Completo
     btnGeneratePdf.addEventListener('click', async () => {
@@ -1288,6 +1475,7 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
       doc.setProperties({
         title: `O Digitador Fiel - Relatório ${metadata.relatorioId}`,
         subject: `Código de verificação: ${verificationCode}`,
+        keywords: `ODF-TEXTO:${encodeBase64Url(normalizeSubmittedText(text))}`,
         author: 'O Digitador Fiel',
         creator: 'O Digitador Fiel'
       });

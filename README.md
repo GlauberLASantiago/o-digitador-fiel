@@ -29,7 +29,7 @@ Esses dados podem auxiliar a avaliação formativa do professor, mas não devem 
 - Quatro temas visuais.
 - Relatório em PDF com o conteúdo submetido, identificação e telemetria.
 - Código de verificação baseado em SHA-256 para detectar alterações.
-- Verificador de relatórios integrado ao aplicativo.
+- Verificador de relatórios por arrastar e soltar o PDF no aplicativo.
 - Botão para copiar o código de incorporação em Moodle e outros sites.
 
 ## Como usar
@@ -44,9 +44,8 @@ Esses dados podem auxiliar a avaliação formativa do professor, mas não devem 
 ## Verificação de um relatório
 
 1. Abra o aplicativo e clique em **Verificar relatório**.
-2. Copie do PDF o código de verificação e cole no campo indicado.
-3. Cole também o conteúdo submetido.
-4. Clique em **Verificar agora**.
+2. Arraste o arquivo PDF para a área indicada ou clique nela para escolher o arquivo.
+3. Aguarde a confirmação automática da integridade.
 
 O mecanismo SHA-256 permite verificar se o conteúdo e os dados associados ao relatório correspondem ao código apresentado. Ele detecta alterações, mas, por funcionar inteiramente no navegador e sem uma chave privada protegida, não equivale a uma assinatura digital emitida por uma autoridade ou servidor.
 
@@ -78,13 +77,14 @@ Em seguida, acesse:
 http://127.0.0.1:8765/index.html
 ```
 
-O carregamento inicial requer conexão com a internet porque as bibliotecas Quill e jsPDF são obtidas por CDN.
+O carregamento inicial requer conexão com a internet porque as bibliotecas Quill, jsPDF e PDF.js são obtidas por CDN.
 
 ## Tecnologias utilizadas
 
 - HTML, CSS e JavaScript
 - [Quill](https://quilljs.com/) para edição e formatação de texto
 - [jsPDF](https://github.com/parallax/jsPDF) para geração do relatório em PDF
+- [PDF.js](https://mozilla.github.io/pdf.js/) para leitura e verificação do relatório
 - Web Crypto API para o cálculo SHA-256
 
 ## Privacidade
