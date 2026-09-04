@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Fundamentação pedagógica do aplicativo O Digitador Fiel.">
+  <title>Fundamentação Pedagógica — O Digitador Fiel</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --panel:#171a21;
+      --panel-2:#1e222b;
+      --border:#2a303b;
+      --text:#f3f5f7;
+      --muted:#aeb6c2;
+      --accent:#4fd1a5;
+      --accent-2:#7ce3bf;
+      --warning:#f1c75b;
+      --danger:#ff8c8c;
+      --shadow:0 14px 36px rgba(0,0,0,.28);
+      --radius:16px;
+      --max:980px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(79,209,165,.08), transparent 34%),
+        linear-gradient(180deg,#0d0f13 0%, var(--bg) 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      line-height:1.72;
+    }
+
+    a{color:var(--accent-2)}
+    .wrap{width:min(calc(100% - 32px),var(--max));margin:0 auto}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(14px);
+      background:rgba(15,17,21,.88);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .topbar-inner{
+      min-height:68px;
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .shield{
+      width:38px;height:38px;
+      display:grid;place-items:center;
+      border-radius:12px;
+      background:linear-gradient(145deg,#23352f,#182720);
+      border:1px solid rgba(124,227,191,.25);
+      box-shadow:inset 0 0 18px rgba(79,209,165,.08);
+      font-size:21px;
+    }
+
+    .back{
+      text-decoration:none;
+      color:var(--text);
+      border:1px solid var(--border);
+      background:var(--panel);
+      padding:8px 12px;
+      border-radius:10px;
+      font-size:.92rem;
+    }
+
+    header.hero{
+      padding:64px 0 34px;
+    }
+
+    .eyebrow{
+      color:var(--accent);
+      font-size:.78rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      margin-bottom:12px;
+    }
+
+    h1,h2,h3{line-height:1.2;letter-spacing:-.025em}
+    h1{font-size:clamp(2rem,5vw,3.45rem);margin:.15em 0 .35em}
+    h2{font-size:clamp(1.45rem,3vw,2rem);margin:0 0 1rem}
+    p{margin:0 0 1.18em}
+
+    .lead{
+      color:#d9dee5;
+      font-size:clamp(1.06rem,2vw,1.22rem);
+      max-width:830px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:28px;
+    }
+
+    .metric{
+      background:linear-gradient(180deg,var(--panel-2),var(--panel));
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .metric strong{display:block;font-size:1.02rem;margin-bottom:4px}
+    .metric span{color:var(--muted);font-size:.9rem}
+
+    main{padding-bottom:72px}
+
+    .card{
+      background:linear-gradient(180deg,rgba(30,34,43,.97),rgba(23,26,33,.97));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:clamp(22px,4vw,38px);
+      margin:18px 0;
+    }
+
+    .card p:last-child{margin-bottom:0}
+
+    .callout{
+      border-left:4px solid var(--accent);
+      background:rgba(79,209,165,.07);
+    }
+
+    .warning{
+      border-left-color:var(--warning);
+      background:rgba(241,199,91,.07);
+    }
+
+    .quote-question{
+      font-size:1.14rem;
+      font-weight:720;
+      line-height:1.55;
+      color:#f7faf9;
+      margin:12px 0 0;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(79,209,165,.09);
+      border:1px solid rgba(79,209,165,.22);
+      color:var(--accent-2);
+      font-size:.82rem;
+      font-weight:700;
+      margin:0 6px 8px 0;
+    }
+
+    .refs{
+      font-size:.96rem;
+      color:#d9dee5;
+    }
+    .ref{
+      padding:14px 0;
+      border-bottom:1px solid var(--border);
+    }
+    .ref:last-child{border-bottom:0}
+
+    .footer{
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      text-align:center;
+      padding:26px 0 42px;
+      font-size:.9rem;
+    }
+
+    .top{
+      display:inline-block;
+      margin-top:10px;
+      text-decoration:none;
+      color:var(--muted);
+    }
+
+    @media (max-width:760px){
+      .hero-grid{grid-template-columns:1fr}
+      .topbar-inner{min-height:62px}
+      .back{font-size:.82rem;padding:7px 9px}
+      header.hero{padding-top:42px}
+    }
+
+    @media print{
+      .topbar{display:none}
+      body{background:#fff;color:#111}
+      .card,.metric{
+        box-shadow:none;
+        background:#fff;
+        border:1px solid #ddd;
+      }
+      .lead,.refs,.metric span{color:#333}
+      .callout{background:#f6fffb}
+      .warning{background:#fff9ea}
+    }
+  </style>
+</head>
+<body id="top">
+
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="shield">🛡️</div>
+        <div>O Digitador Fiel</div>
+      </div>
+      <a class="back" href="https://glauberlasantiago.github.io/o-digitador-fiel/">Abrir aplicativo</a>
+    </div>
+  </div>
+
+  <header class="hero wrap">
+    <div class="eyebrow">Fundamentação pedagógica</div>
+    <h1>Por que acompanhar o processo de escrita?</h1>
+    <p class="lead">Uma explicação pedagógica para o uso de <strong>O Digitador Fiel</strong> como mediação da produção textual, da avaliação formativa, da autorregulação e da autoria em contextos educacionais contemporâneos.</p>
+
+    <div class="hero-grid">
+      <div class="metric">
+        <strong>Escrita como processo</strong>
+        <span>Planejar, formular, revisar e reformular.</span>
+      </div>
+      <div class="metric">
+        <strong>Avaliação formativa</strong>
+        <span>Dados como indícios para interpretação pedagógica.</span>
+      </div>
+      <div class="metric">
+        <strong>Autoria e IA</strong>
+        <span>Sem promessas de detecção ou certificação automática.</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="card">
+      <div class="tag">Processo de escrita</div>
+      <div class="tag">Mediação pedagógica</div>
+      <p><strong>O Digitador Fiel</strong> é uma ferramenta educacional concebida para deslocar parcialmente a atenção do texto como produto final para a <strong>escrita como processo</strong>. Em muitas atividades acadêmicas, o professor recebe apenas o resultado concluído: algumas páginas que pouco revelam sobre o percurso realizado pelo estudante para chegar até elas. Não é possível saber, apenas pelo produto, quanto tempo foi dedicado à tarefa, se houve elaboração progressiva, revisão, hesitações, correções ou reconstruções durante a escrita. O aplicativo procura tornar alguns desses aspectos observáveis, sem pretender transformar dados técnicos em prova automática de aprendizagem ou autoria.</p>
+
+      <p>Essa concepção aproxima-se das abordagens processuais da escrita. Flower e Hayes (1981), por exemplo, contribuíram para superar uma compreensão estritamente linear da produção textual ao mostrar que escrever envolve processos cognitivos articulados e recursivos, nos quais o autor planeja, formula, avalia e reformula continuamente aquilo que produz. Escrever não significa simplesmente registrar um pensamento previamente pronto: parte do próprio pensamento é elaborada durante a atividade de escrita. Por isso, apagar, corrigir, interromper, reler, substituir palavras e reorganizar ideias não são necessariamente sinais de dificuldade; fazem parte da atividade intelectual de composição.</p>
+
+      <p>O Digitador Fiel procura criar condições para que esse percurso adquira maior relevância pedagógica. Ao solicitar que o texto seja efetivamente digitado no ambiente, impedindo a simples colagem de um conteúdo previamente produzido em outro local, introduz-se deliberadamente uma pequena <strong>fricção pedagógica</strong>. A intenção não é afirmar que digitar corresponde necessariamente a pensar, nem que um texto digitado é necessariamente autoral. A finalidade é tornar menos imediata a transferência de uma resposta pronta e favorecer uma situação na qual o estudante tenha maior contato temporal e material com aquilo que está entregando.</p>
+    </section>
+
+    <section class="card">
+      <div class="tag">Inteligência Artificial Generativa</div>
+      <p>Essa característica tornou-se particularmente relevante com a disseminação da Inteligência Artificial Generativa. Atualmente, é possível obter em poucos segundos textos relativamente sofisticados e apresentá-los como produto acabado. Nesse contexto, uma resposta educacional possível não é simplesmente tentar descobrir, depois da entrega, se determinado texto foi ou não produzido por IA. O Digitador Fiel segue outra lógica: <strong>intervir no desenho da própria atividade</strong>, criando uma situação em que o processo de produção textual volte a adquirir importância.</p>
+
+      <p>Por isso, o aplicativo <strong>não é um detector de inteligência artificial</strong>. Também não certifica autoria intelectual. Um estudante pode digitar um texto produzido anteriormente por uma IA, copiar manualmente conteúdo de outra fonte, memorizar uma resposta ou até solicitar que outra pessoa digite por ele. Nenhum registro de teclado pode demonstrar o que ocorreu intelectualmente antes da digitação. O que o sistema pode informar, de maneira muito mais modesta e pedagogicamente defensável, é que determinado conteúdo foi inserido progressivamente naquele editor e que algumas características observáveis desse processo foram registradas.</p>
+    </section>
+
+    <section class="card callout">
+      <h2>Indícios de processo, não provas de autoria</h2>
+      <p>Essa distinção é central. O Digitador Fiel trabalha com <strong>indícios de processo</strong>, e não com provas de autoria. Dados como tempo ativo, número de palavras, correções, velocidade aproximada de digitação, saídas da aba e tentativas de colagem precisam ser interpretados em conjunto com a natureza da atividade, o perfil do estudante e outras evidências de aprendizagem. Nenhum desses indicadores, isoladamente, deve fundamentar acusações de fraude, plágio ou uso inadequado de inteligência artificial.</p>
+    </section>
+
+    <section class="card">
+      <div class="tag">Avaliação formativa</div>
+      <p>Nesse sentido, a ferramenta aproxima-se também da <strong>avaliação formativa</strong>. Na tradição de Black e Wiliam (1998), informações produzidas durante a aprendizagem tornam-se pedagogicamente relevantes quando ajudam professor e estudante a compreender o processo e tomar decisões para seu desenvolvimento. O valor do relatório produzido pelo Digitador Fiel, portanto, não está simplesmente em registrar dados, mas na possibilidade de utilizá-los como elementos adicionais para interpretar o trabalho realizado.</p>
+
+      <p>Um estudante que revisa repetidamente um trecho, por exemplo, pode estar enfrentando uma dificuldade conceitual, mas também pode estar realizando um trabalho cuidadoso de elaboração. Uma atividade realizada lentamente não significa necessariamente baixo domínio, assim como uma atividade realizada rapidamente não significa necessariamente domínio elevado. O relatório ganha significado apenas quando colocado em diálogo com o texto produzido, os objetivos da tarefa e, quando necessário, com o próprio estudante.</p>
+    </section>
+
+    <section class="card">
+      <div class="tag">Autorregulação</div>
+      <div class="tag">Metacognição</div>
+      <p>Há também uma aproximação com os estudos sobre <strong>aprendizagem autorregulada</strong>. Zimmerman (2002) destaca que a aprendizagem autorregulada envolve processos de planejamento, monitoramento e avaliação da própria atividade. Aplicado à produção textual, isso significa que o estudante precisa acompanhar o que está fazendo, perceber dificuldades, ajustar estratégias e avaliar o próprio desempenho. Ao tornar alguns elementos do percurso visíveis, o aplicativo pode ser utilizado não apenas como informação para o professor, mas também como oportunidade de reflexão do estudante sobre sua própria forma de escrever.</p>
+
+      <p>Essa perspectiva abre possibilidades interessantes de uso pedagógico. O professor pode, por exemplo, discutir posteriormente com os estudantes o que aconteceu durante a elaboração do texto: onde encontraram dificuldades, quais trechos foram mais revisados, como organizaram o tempo, que estratégias utilizaram e o que fariam de modo diferente em uma nova versão. Nesse caso, a telemetria deixa de funcionar como mecanismo de vigilância e passa a participar de uma atividade de <strong>metacognição sobre a escrita</strong>.</p>
+    </section>
+
+    <section class="card">
+      <div class="tag">Restrição por design</div>
+      <p>O próprio bloqueio de copiar e colar deve ser compreendido nesse contexto. Ele constitui uma <strong>restrição intencional de design</strong>, criada para determinada situação pedagógica. Tecnologias educacionais não apenas oferecem possibilidades; também podem estabelecer limites que reorganizam a atividade. Aqui, o limite procura interromper a lógica da simples transferência instantânea de um texto pronto e devolver alguma temporalidade ao ato de escrever.</p>
+
+      <p>Isso não significa defender o bloqueio de copiar e colar como princípio geral para toda produção textual. Em situações reais de escrita, pesquisar, consultar fontes, deslocar trechos, reutilizar anotações e trabalhar entre diferentes documentos são práticas legítimas e frequentemente necessárias. O Digitador Fiel foi pensado para <strong>atividades específicas nas quais o professor considera pedagogicamente importante acompanhar uma produção textual realizada naquele momento e naquele espaço</strong>. Trata-se, portanto, de uma mediação situada, e não de um modelo universal de escrita acadêmica.</p>
+    </section>
+
+    <section class="card warning">
+      <h2>Acessibilidade e justiça educacional</h2>
+      <p>Velocidade de digitação não deve ser confundida com conhecimento, inteligência, autoria ou competência textual. Estudantes apresentam diferentes condições motoras, cognitivas, linguísticas e tecnológicas, e algumas pessoas podem necessitar de tecnologias assistivas ou adaptações que entrem em conflito com determinadas restrições do aplicativo. Seu uso deve prever, sempre que necessário, alternativas e acomodações adequadas.</p>
+    </section>
+
+    <section class="card">
+      <div class="tag">Privacidade</div>
+      <div class="tag">Integridade documental</div>
+      <p>A opção de processar as informações localmente no navegador acrescenta outra dimensão à proposta pedagógica. Acompanhamento do processo não precisa significar vigilância permanente ou coleta indiscriminada de dados. O princípio adotado é registrar apenas informações relacionadas à atividade e entregá-las ao próprio usuário na forma de relatório, evitando, pelo funcionamento normal do aplicativo, a criação de uma base remota de textos e comportamentos dos estudantes.</p>
+
+      <p>O código SHA-256 acrescentado ao relatório possui finalidade diferente. Ele não certifica autoria e não transforma o documento em assinatura digital. Sua função é fornecer um mecanismo de <strong>verificação de integridade</strong>, permitindo conferir se o conteúdo e os dados apresentados no relatório permanecem correspondentes àqueles existentes no momento de sua geração. Assim, integridade documental e autoria intelectual são deliberadamente tratadas como problemas distintos.</p>
+    </section>
+
+    <section class="card callout">
+      <h2>O que o aplicativo procura favorecer</h2>
+      <p>Pedagogicamente, portanto, O Digitador Fiel pode ser compreendido como um <strong>dispositivo de mediação da produção textual orientado ao processo</strong>. Ele procura tornar algumas dimensões da escrita observáveis, introduzir uma restrição contra a transferência imediata de respostas prontas e oferecer ao professor informações adicionais para uma avaliação contextualizada.</p>
+
+      <p class="quote-question">Mais do que perguntar “este texto foi feito por IA?”, a proposta é favorecer perguntas como: <em>como este estudante escreveu? Como elaborou e revisou suas ideias? Que evidências temos de seu processo? Como podemos conversar com ele sobre aquilo que produziu?</em></p>
+    </section>
+
+    <section class="card">
+      <p>Em tempos de inteligência artificial generativa, essa mudança de pergunta é especialmente importante. Talvez a questão educacional central não seja desenvolver tecnologias cada vez mais sofisticadas para perseguir textos produzidos artificialmente depois que eles já foram entregues. Uma alternativa é redesenhar determinadas situações de aprendizagem para que o percurso, a reflexão, a elaboração e a capacidade de explicar aquilo que se produziu voltem a ter peso na avaliação.</p>
+
+      <p>O Digitador Fiel nasce dessa perspectiva. Ele não pretende restabelecer uma suposta certeza tecnológica sobre quem escreveu um texto. Ao contrário, reconhece que nenhuma ferramenta desse tipo pode fornecer essa certeza. Sua contribuição é mais modesta e, justamente por isso, pedagogicamente mais consistente: <strong>criar condições para valorizar novamente o processo de escrever e produzir evidências que possam enriquecer — mas nunca substituir — o julgamento pedagógico do professor</strong>.</p>
+
+      <p>Nesse sentido, o nome <strong>O Digitador Fiel</strong> contém também uma provocação. O aplicativo pode registrar com razoável fidelidade aquilo que ocorreu dentro de seu próprio ambiente técnico; não pode garantir a fidelidade intelectual entre quem digitou, quem pensou e quem originalmente produziu as ideias. A autoria continua sendo uma questão humana, pedagógica e contextual. A tecnologia oferece vestígios do processo; cabe à educação atribuir-lhes significado.</p>
+    </section>
+
+    <section class="card refs">
+      <h2>Referências</h2>
+
+      <div class="ref">
+        BLACK, Paul; WILIAM, Dylan. Assessment and classroom learning.
+        <em>Assessment in Education: Principles, Policy &amp; Practice</em>,
+        v. 5, n. 1, p. 7-74, 1998.
+      </div>
+
+      <div class="ref">
+        FLOWER, Linda; HAYES, John R. A cognitive process theory of writing.
+        <em>College Composition and Communication</em>,
+        v. 32, n. 4, p. 365-387, 1981.
+      </div>
+
+      <div class="ref">
+        ZIMMERMAN, Barry J. Becoming a self-regulated learner: an overview.
+        <em>Theory Into Practice</em>,
+        v. 41, n. 2, p. 64-70, 2002.
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <strong>O Digitador Fiel</strong><br>
+      Desenvolvido pelo professor Glauber Santiago — DAC/UFSCar
+      <br>
+      <a class="top" href="#top">↑ Voltar ao início</a>
+    </div>
+  </footer>
+
+</body>
+</html>
