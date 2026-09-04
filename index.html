@@ -1639,7 +1639,7 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
         doc.setTextColor(2, 132, 199);
         doc.text(label, x, y);
         const width = doc.getTextWidth(label);
-        doc.link(x, y - 2.5, width, 3.5, { url });
+        doc.link(x, y - 3, width, 4.2, { url });
         return x + width;
       }
 
@@ -1651,46 +1651,47 @@ PROFESSOR: O enunciado e as orientações da atividade podem ser apresentados em
         doc.roundedRect(10, footerY, pageWidth - 20, 61, 2, 2, 'FD');
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
+        doc.setFontSize(8.5);
         doc.setTextColor(15, 23, 42);
         doc.text('IDENTIFICAÇÃO E TELEMETRIA', 14, footerY + 6);
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
+        doc.setFontSize(7.8);
         doc.setTextColor(51, 65, 85);
         doc.text(`Aluno: ${studentName}`, 14, footerY + 12, { maxWidth: 100 });
         doc.text(`Matrícula / RA: ${studentId}`, 118, footerY + 12, { maxWidth: 45 });
         doc.text(`Disciplina: ${subjectName}`, 14, footerY + 18, { maxWidth: 100 });
         doc.text(`Relatório: ${metadata.relatorioId}`, 118, footerY + 18, { maxWidth: 48 });
-        doc.setFontSize(6.5);
+        doc.setFontSize(7);
         doc.text(`Emissão: ${new Date(timestamp).toLocaleString('pt-BR')} | Tempo: ${timeSpentElem.innerText} | Palavras: ${words} | Caracteres: ${text.length}`, 14, footerY + 24);
         doc.text(`PPM: ${metadata.ppmMedio} | Toques válidos: ${validKeystrokes} | Correções: ${backspaceCount} | Desacelerados: ${bufferedKeystrokes} | Colagens: ${pasteAttempts} | Saídas: ${tabSwitchCount}`, 14, footerY + 30);
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(6.5);
+        doc.setFontSize(7.2);
         doc.text('INTEGRIDADE SHA-256', 14, footerY + 37);
         doc.setFont('courier', 'normal');
-        doc.setFontSize(5.7);
+        doc.setFontSize(6.2);
         doc.text(cryptoHash, 14, footerY + 42);
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(5.5);
+        doc.setFontSize(6.3);
         doc.setTextColor(71, 85, 105);
         doc.text('Código para verificação no aplicativo:', 14, footerY + 48);
         doc.setFont('courier', 'normal');
-        doc.setFontSize(4.2);
+        doc.setFontSize(4.6);
         const codeLines = doc.splitTextToSize(verificationCode, pageWidth - 28);
         doc.text(codeLines, 14, footerY + 52, { lineHeightFactor: 1.05 });
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(5.7);
+        doc.setFontSize(6.5);
         drawPdfLink(
-          'Aplicativo: github.com/GlauberLASantiago/o-digitador-fiel',
-          'https://github.com/GlauberLASantiago/o-digitador-fiel',
+          'Verificar relatório: glauberlasantiago.github.io/o-digitador-fiel/',
+          'https://glauberlasantiago.github.io/o-digitador-fiel/',
           14,
           footerY + 58
         );
 
+        doc.setFontSize(6.3);
         doc.text(`Página ${j} de ${totalPages}`, pageWidth - 14, pageHeight - 5, { align: 'right' });
         doc.text('Integridade verificável; não equivale a assinatura digital de um emissor.', 14, pageHeight - 5);
       }
